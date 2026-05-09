@@ -538,10 +538,10 @@
                 qrSection.style.display = 'block'; qrContainer.innerHTML = '';
                 const url = window.location.href;
                 if (url.startsWith('file://')) {
-                    qrHint.textContent = '请部署后扫码';
+                    qrHint.textContent = '精液评分系统';
                     new QRCode(qrContainer, {text:'https://example.com', width:160, height:160});
                 } else {
-                    qrHint.textContent = '扫描二维码即可使用';
+                    qrHint.textContent = '精液评分系统';
                     new QRCode(qrContainer, {text:url, width:160, height:160});
                 }
             };
