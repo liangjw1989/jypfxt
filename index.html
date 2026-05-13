@@ -42,7 +42,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 16px;
+            padding: 16px 16px 130px 16px;
             color: var(--text);
             -webkit-tap-highlight-color: transparent;
         }
@@ -116,13 +116,106 @@
         .pregnancy-row.highlighted { box-shadow:inset 4px 0 0 currentColor; transform:scale(1.02); z-index:1; margin:2px 0; border-radius:6px; }
         .pregnancy-row.highlighted::after { content:'◀ 当前'; position:absolute; right:118px; top:50%; transform:translateY(-50%); font-size:0.6rem; font-weight:700; color:#fff; background:#3e3a36; padding:2px 6px; border-radius:8px; white-space:nowrap; }
         .disclaimer { font-size:0.7rem; color:#b0a89e; text-align:center; padding:4px 0; }
-        .contact-info { text-align:center; font-weight:bold; color:var(--primary); margin-top:4px; font-size:0.9rem; }
         .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#3e3a36; color:#fff; padding:10px 20px; border-radius:20px; font-size:0.85rem; z-index:2000; opacity:0; pointer-events:none; transition:opacity 0.3s; }
         .toast.show { opacity:1; }
         .admin-table { width:100%; border-collapse:collapse; font-size:0.8rem; margin:12px 0; }
         .admin-table th, .admin-table td { border:1px solid var(--border); padding:8px 6px; text-align:center; }
         .admin-table th { background:#f5f0eb; font-weight:600; }
-        @media (max-width:420px) { .score-cards { grid-template-columns:repeat(3,1fr); gap:6px; } .score-card { padding:10px 6px; } .score-card .score-value { font-size:1.4rem; } .score-card .indicator-label { font-size:0.62rem; } }
+
+        .qr-flex-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .qr-code-box {
+            background: #fff;
+            padding: 12px;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+            display: inline-block;
+            text-align: center;
+        }
+        .qr-side-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-align: center;
+            line-height: 1.6;
+        }
+        .qr-system-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--primary);
+            margin-top: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        .page-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 16px 10px;
+            z-index: 500;
+            gap: 8px;
+        }
+        .footer-prompt {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #4a3a2e;
+            text-align: center;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .footer-contact-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .footer-qr {
+            width: 70px;
+            height: 70px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+            border: 2px solid #d4c5b2;
+            flex-shrink: 0;
+        }
+        .footer-qr img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .footer-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        @media (max-width:420px) {
+            .score-cards { grid-template-columns:repeat(3,1fr); gap:6px; }
+            .score-card { padding:10px 6px; }
+            .score-card .score-value { font-size:1.4rem; }
+            .score-card .indicator-label { font-size:0.62rem; }
+            .page-footer { padding: 10px 12px 8px; }
+            .footer-prompt { font-size: 0.75rem; }
+        }
     </style>
 </head>
 <body>
@@ -190,15 +283,28 @@
                 <div class="overall-score" id="overallScore">-</div>
             </div>
             <div class="advice-box" id="resultAdvice" style="display:none;"></div>
-            <p class="contact-info">详询 0319-3021530或微信咨询</p>
             <p class="disclaimer">⚠️ <strong>结果仅供参考，不作为诊疗依据。</strong></p>
         </div>
 
         <div class="card qr-section" id="qrSection" style="display:none;">
-            <p class="qr-label">📱 扫描二维码打开本应用</p>
-            <div id="qrContainer"></div>
-            <p class="qr-hint" id="qrHint"></p>
-            <button class="btn btn-outline btn-sm" onclick="hideQRCode()">收起二维码</button>
+            <div class="qr-flex-container">
+                <div class="qr-code-box" id="qrContainer"></div>
+                <div class="qr-side-text">
+                    微信扫码<br>快速自测<br>隐私无忧
+                </div>
+            </div>
+            <div style="text-align:center;">
+                <p class="qr-system-title" id="qrHint">精液评分系统</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="hideQRCode()" style="display:block;margin:8px auto 0;">收起二维码</button>
+        </div>
+    </div>
+
+    <div class="page-footer" id="pageFooter">
+        <p class="footer-prompt">如有疑问或需进一步帮助，欢迎添加微信深度咨询</p>
+        <div class="footer-contact-row">
+            <div class="footer-qr" id="footerQrContainer"></div>
+            <span class="footer-text">📞 详询0319-3021530或微信咨询</span>
         </div>
     </div>
 
@@ -210,7 +316,6 @@
             <div class="advice-box" id="pregnancyAdvice"></div>
             <div class="couple-note" id="coupleNote">⚠️ 需结合配偶情况，建议夫妻同治</div>
             <p style="text-align:center;font-size:0.78rem;margin-top:6px;">当前综合评分：<strong id="modalOverallScore">-</strong> 分</p>
-            <p class="contact-info">详询 0319-3021530或微信咨询</p>
             <p class="disclaimer">⚠️ <strong>结果仅供参考，不作为诊疗依据。</strong></p>
         </div>
     </div>
@@ -239,7 +344,7 @@
     <script>
         (function() {
             const ADMIN_PASSWORD = 'A123888';
-            const STORAGE_KEY = 'semen_report_v12';
+            const STORAGE_KEY = 'semen_report_v15';
 
             function concScore(conc) {
                 if (conc <= 0) return 0;
@@ -248,7 +353,6 @@
                 if (conc < 169) return 80 + ((conc - 73) / (169 - 73)) * 10;
                 return Math.min(99, 90 + ((conc - 169) / (250 - 169)) * 9);
             }
-
             function prScore(pr) {
                 if (pr <= 0) return 0;
                 if (pr < 32) return (pr / 32) * 60;
@@ -256,7 +360,6 @@
                 if (pr < 69) return 80 + ((pr - 55) / (69 - 55)) * 10;
                 return Math.min(100, 90 + ((pr - 69) / (100 - 69)) * 10);
             }
-
             function morphScore(morph) {
                 if (morph <= 0) return 0;
                 if (morph < 4) return (morph / 4) * 60;
@@ -264,14 +367,12 @@
                 if (morph < 15) return 80 + ((morph - 9) / (15 - 9)) * 10;
                 return Math.min(100, 90 + ((morph - 15) / (100 - 15)) * 10);
             }
-
             function getRatingFromScore(score) {
                 if (score >= 80) return { rating: '优秀', tagClass: 'excellent' };
                 if (score >= 70) return { rating: '良好', tagClass: 'good' };
                 if (score >= 60) return { rating: '及格', tagClass: 'pass' };
                 return { rating: '不及格', tagClass: 'fail' };
             }
-
             function getAdviceByWeight(weighted) {
                 if (weighted >= 80) return '精子参数理想。建议保持良好生活习惯，维持生育力健康。';
                 if (weighted >= 70) return '精子参数良好。建议保持良好生活习惯，维持生育力健康。';
@@ -312,6 +413,7 @@
             const qrSection = document.getElementById('qrSection');
             const qrContainer = document.getElementById('qrContainer');
             const qrHint = document.getElementById('qrHint');
+            const footerQrContainer = document.getElementById('footerQrContainer');
 
             let currentResult = null;
             let qrInstance = null;
@@ -535,17 +637,46 @@
             };
 
             window.showQRCode = () => {
-                qrSection.style.display = 'block'; qrContainer.innerHTML = '';
+                qrSection.style.display = 'block';
+                qrContainer.innerHTML = '';
                 const url = window.location.href;
                 if (url.startsWith('file://')) {
-                    qrHint.textContent = '精液评分系统';
-                    new QRCode(qrContainer, {text:'https://example.com', width:160, height:160});
+                    new QRCode(qrContainer, {text:'https://example.com', width:160, height:160, colorDark:'#3e3a36', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M});
                 } else {
-                    qrHint.textContent = '精液评分系统';
-                    new QRCode(qrContainer, {text:url, width:160, height:160});
+                    new QRCode(qrContainer, {text:url, width:160, height:160, colorDark:'#3e3a36', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M});
                 }
+                qrSection.scrollIntoView({behavior:'smooth', block:'center'});
             };
             window.hideQRCode = () => { qrSection.style.display = 'none'; qrContainer.innerHTML = ''; };
+
+            // 底部微信二维码：优先显示同目录下的 wechat_qr.png
+            function generateFooterQR() {
+                const img = new Image();
+                img.onload = () => {
+                    footerQrContainer.innerHTML = '';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.alt = '微信咨询';
+                    footerQrContainer.appendChild(img);
+                };
+                img.onerror = () => {
+                    // 加载失败则回退为生成二维码
+                    footerQrContainer.innerHTML = '';
+                    try {
+                        new QRCode(footerQrContainer, {
+                            text: 'weixin://contacts/profile/placeholder',
+                            width: 70,
+                            height: 70,
+                            colorDark: '#3e3a36',
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel.L,
+                        });
+                    } catch (e) {
+                        footerQrContainer.innerHTML = '<span style="font-size:0.6rem;">微信</span>';
+                    }
+                };
+                img.src = './wechat_qr.png'; // 请确保同目录下有该图片
+            }
 
             document.addEventListener('keydown', e => {
                 if (e.key === 'Escape') {
@@ -567,6 +698,7 @@
             });
 
             btnPregnancy.disabled = true;
+            generateFooterQR();
         })();
     </script>
 </body>
