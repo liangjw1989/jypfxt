@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>精液报告评分系统</title>
+    <!--
+    ============================================
+    软件名称：美和生殖男性医学中心精液报告评分系统
+    版本号：V2.1.0
+    著作权人：[梁吉旺]
+    开发完成日期：2026年06月08日
+    权利范围：全部权利
+    ============================================
+    本系统基于WHO第六版手册及中华医学会男科学分会
+    相关指南构建，用于精液参数的自动化评估与建议。
+    所有评分算法与建议内容均遵循循证医学原则，
+    仅供参考，不作为临床诊断最终依据。
+    ============================================
+    -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -42,9 +56,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 16px 16px 130px 16px;
+            padding: 60px 16px 150px 16px;
             color: var(--text);
             -webkit-tap-highlight-color: transparent;
+            position: relative;
         }
         .app-container { width:100%; max-width:440px; position:relative; z-index:1; display:flex; flex-direction:column; gap:16px; }
         .card { background:var(--card-bg); border-radius:var(--radius); padding:20px 18px; box-shadow:var(--shadow-md); border:1px solid var(--border); }
@@ -122,103 +137,39 @@
         .admin-table th, .admin-table td { border:1px solid var(--border); padding:8px 6px; text-align:center; }
         .admin-table th { background:#f5f0eb; font-weight:600; }
 
-        .qr-flex-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .qr-code-box {
-            background: #fff;
-            padding: 12px;
-            border-radius: 14px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            border: 1px solid #e0e0e0;
-            display: inline-block;
-            text-align: center;
-        }
-        .qr-side-text {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--primary);
-            text-align: center;
-            line-height: 1.6;
-        }
-        .qr-system-title {
-            text-align: center;
-            font-weight: 700;
-            font-size: 0.8rem;
-            color: var(--primary);
-            margin-top: 4px;
-            letter-spacing: 0.05em;
-        }
+        .wx-tip { position:fixed; top:0; left:0; width:100%; background:#ffeaa7; color:#c0392b; font-weight:600; font-size:0.85rem; text-align:center; padding:12px 40px 12px 16px; z-index:1500; box-shadow:0 2px 8px rgba(0,0,0,0.1); display:none; line-height:1.4; }
+        .wx-tip.show { display:block; }
+        .wx-tip .close-tip { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; font-size:1.4rem; color:#c0392b; cursor:pointer; padding:0 4px; }
 
-        .page-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #fff;
-            border-top: 1px solid var(--border);
-            box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 16px 10px;
-            z-index: 500;
-            gap: 8px;
-        }
-        .footer-prompt {
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: #4a3a2e;
-            text-align: center;
-            margin: 0;
-            line-height: 1.4;
-        }
-        .footer-contact-row {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .footer-qr {
-            width: 70px;
-            height: 70px;
-            border-radius: 14px;
-            overflow: hidden;
-            background: #fff;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-            border: 2px solid #d4c5b2;
-            flex-shrink: 0;
-        }
-        .footer-qr img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        .footer-text {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--primary);
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        @media (max-width:420px) {
-            .score-cards { grid-template-columns:repeat(3,1fr); gap:6px; }
-            .score-card { padding:10px 6px; }
-            .score-card .score-value { font-size:1.4rem; }
-            .score-card .indicator-label { font-size:0.62rem; }
-            .page-footer { padding: 10px 12px 8px; }
-            .footer-prompt { font-size: 0.75rem; }
-        }
+        .qr-flex-container { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:12px; flex-wrap:wrap; }
+        .qr-code-box { background:#fff; padding:12px; border-radius:14px; box-shadow:0 8px 20px rgba(0,0,0,0.1); border:1px solid #e0e0e0; display:inline-block; text-align:center; }
+        .qr-side-text { font-size:0.9rem; font-weight:600; color:var(--primary); text-align:center; line-height:1.6; }
+        .qr-system-title { text-align:center; font-weight:700; font-size:0.8rem; color:var(--primary); margin-top:4px; letter-spacing:0.05em; }
+        .page-footer { position:fixed; bottom:0; left:0; width:100%; background:#fff; border-top:1px solid var(--border); box-shadow:0 -2px 12px rgba(0,0,0,0.08); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px 16px 10px; z-index:500; gap:8px; }
+        .footer-prompt { font-size:0.8rem; font-weight:500; color:#4a3a2e; text-align:center; margin:0; line-height:1.4; }
+        .footer-contact-row { display:flex; align-items:center; gap:14px; flex-wrap: wrap; justify-content: center; }
+        .footer-qr-group { display:flex; gap:12px; align-items:center; }
+        .footer-qr-item { display:flex; flex-direction:column; align-items:center; gap:4px; }
+        .footer-qr { width:56px; height:56px; border-radius:12px; overflow:hidden; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,0.1); border:1px solid #d4c5b2; flex-shrink:0; }
+        .footer-qr img { width:100%; height:100%; object-fit:contain; }
+        .footer-qr-label { font-size:0.6rem; color:#6b6560; font-weight:500; }
+        .footer-text { font-size:0.85rem; font-weight:600; color:var(--primary); white-space:nowrap; display:flex; align-items:center; gap:4px; }
+        @media (max-width:420px) { .score-cards { grid-template-columns:repeat(3,1fr); gap:6px; } .score-card { padding:10px 6px; } .score-card .score-value { font-size:1.4rem; } .score-card .indicator-label { font-size:0.62rem; } .page-footer { padding:10px 12px 8px; } .footer-prompt { font-size:0.75rem; } }
     </style>
 </head>
 <body>
+    <!--
+    ============================================
+    模块: 微信环境提示 (WeChat Tip)
+    功能: 当检测到在微信内置浏览器中打开时，
+    显示提示引导用户切换至系统浏览器。
+    ============================================
+    -->
+    <div class="wx-tip" id="wxTip">
+        ⚠️ 如在微信中无法下载，请点击右上角「…」→「在浏览器中打开」
+        <button class="close-tip" onclick="document.getElementById('wxTip').style.display='none'">✕</button>
+    </div>
+
     <div class="toast" id="toast"></div>
     <div class="app-container">
         <div class="card header">
@@ -255,6 +206,7 @@
             <div class="btn-row" style="margin-top:8px;">
                 <button class="btn btn-outline btn-sm" onclick="resetAll()">🔄 重置</button>
                 <button class="btn btn-outline btn-sm" onclick="showQRCode()">📱 二维码</button>
+                <button class="btn btn-outline btn-sm" id="btnPrint" onclick="printReport()" disabled>🖨️ 打印报告</button>
             </div>
         </div>
 
@@ -289,9 +241,7 @@
         <div class="card qr-section" id="qrSection" style="display:none;">
             <div class="qr-flex-container">
                 <div class="qr-code-box" id="qrContainer"></div>
-                <div class="qr-side-text">
-                    微信扫码<br>快速自测<br>隐私无忧
-                </div>
+                <div class="qr-side-text">微信扫码<br>快速自测<br>隐私无忧</div>
             </div>
             <div style="text-align:center;">
                 <p class="qr-system-title" id="qrHint">精液评分系统</p>
@@ -300,10 +250,27 @@
         </div>
     </div>
 
+    <!--
+    ============================================
+    模块: 底部固定联系栏 (Footer Contact Bar)
+    功能: 展示双微信二维码 + 电话咨询信息
+    二维码图片文件需命名为 wechat_qr1.png 和 wechat_qr2.png
+    放置于与本HTML文件相同的目录下即可自动显示。
+    ============================================
+    -->
     <div class="page-footer" id="pageFooter">
         <p class="footer-prompt">如有疑问或需进一步帮助，欢迎添加微信深度咨询</p>
         <div class="footer-contact-row">
-            <div class="footer-qr" id="footerQrContainer"></div>
+            <div class="footer-qr-group">
+                <div class="footer-qr-item">
+                    <div class="footer-qr" id="footerQrContainer1"></div>
+                    <span class="footer-qr-label">生殖院区</span>
+                </div>
+                <div class="footer-qr-item">
+                    <div class="footer-qr" id="footerQrContainer2"></div>
+                    <span class="footer-qr-label">美和院区</span>
+                </div>
+            </div>
             <span class="footer-text">📞 详询0319-3021530或微信咨询</span>
         </div>
     </div>
@@ -334,18 +301,33 @@
                     <tbody id="adminTableBody"><tr><td colspan="6">暂无记录</td></tr></tbody>
                 </table>
             </div>
-            <div class="btn-row">
+            <div class="btn-row" style="margin-top:12px;">
+                <button class="btn btn-outline btn-sm" onclick="exportCSV()">📋 导出CSV</button>
+                <button class="btn btn-outline btn-sm" onclick="exportXLS()">📊 导出XLS</button>
+                <button class="btn btn-outline btn-sm" onclick="exportJSON()">📦 导出JSON</button>
                 <button class="btn btn-outline btn-sm" onclick="clearAllRecords()">🗑️ 清除</button>
-                <button class="btn btn-outline btn-sm" onclick="exportRecords()">📋 导出</button>
             </div>
         </div>
     </div>
 
     <script>
         (function() {
+            /*
+            ============================================
+            全局配置与常量 (Global Configuration)
+            ============================================
+            */
             const ADMIN_PASSWORD = 'A123888';
-            const STORAGE_KEY = 'semen_report_v15';
+            const STORAGE_KEY = 'semen_report_v17';
+            const APP_VERSION = '2.1.0';
+            const APP_NAME = '美和生殖男性医学中心精液报告评分系统';
 
+            /*
+            ============================================
+            评分算法核心函数 (Scoring Engine)
+            依据WHO第六版手册及国内专家共识设计分段线性评分模型。
+            ============================================
+            */
             function concScore(conc) {
                 if (conc <= 0) return 0;
                 if (conc < 15) return (conc / 15) * 60;
@@ -367,6 +349,12 @@
                 if (morph < 15) return 80 + ((morph - 9) / (15 - 9)) * 10;
                 return Math.min(100, 90 + ((morph - 15) / (100 - 15)) * 10);
             }
+
+            /*
+            ============================================
+            评级与建议逻辑 (Rating & Advisory)
+            ============================================
+            */
             function getRatingFromScore(score) {
                 if (score >= 80) return { rating: '优秀', tagClass: 'excellent' };
                 if (score >= 70) return { rating: '良好', tagClass: 'good' };
@@ -382,10 +370,100 @@
                 return '参数严重异常。建议深度筛查（遗传学、精子DNA碎片率等），综合评估后必要时行试管婴儿助孕。';
             }
 
+            /*
+            ============================================
+            辅助工具模块 (Utility Module)
+            包含数据加密、备份、打印等功能。
+            ============================================
+            */
+            function simpleHash(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash |= 0;
+                }
+                return hash.toString(16);
+            }
+            function encryptData(data, key) {
+                // 简易对称加密演示（实际生产中应使用Web Crypto API）
+                const json = JSON.stringify(data);
+                let result = '';
+                for (let i = 0; i < json.length; i++) {
+                    result += String.fromCharCode(json.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+                }
+                return btoa(result);
+            }
+            function decryptData(encrypted, key) {
+                try {
+                    const decoded = atob(encrypted);
+                    let result = '';
+                    for (let i = 0; i < decoded.length; i++) {
+                        result += String.fromCharCode(decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+                    }
+                    return JSON.parse(result);
+                } catch (e) {
+                    return null;
+                }
+            }
+            function backupDataToFile() {
+                const records = getRecords();
+                const encrypted = encryptData(records, 'MeiHe2026');
+                const blob = new Blob([encrypted], {type:'application/octet-stream'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `report_backup_${Date.now()}.dat`;
+                a.click();
+                showToast('备份文件已生成');
+            }
+            function restoreDataFromFile(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const decrypted = decryptData(e.target.result, 'MeiHe2026');
+                    if (decrypted) {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(decrypted));
+                        refreshAdminTable();
+                        showToast('数据恢复成功');
+                    } else {
+                        showToast('文件损坏或密码错误');
+                    }
+                };
+                reader.readAsText(file);
+            }
+            function searchRecords(keyword) {
+                const records = getRecords();
+                return records.filter(r => {
+                    return r.timestamp.includes(keyword) ||
+                           String(r.conc).includes(keyword) ||
+                           String(r.pr).includes(keyword) ||
+                           (r.overallRating && r.overallRating.includes(keyword));
+                });
+            }
+            function printReport() {
+                if (!currentResult) { showToast('请先完成评分'); return; }
+                const win = window.open('', '_blank', 'width=600,height=400');
+                const html = `
+                    <html>
+                    <head><title>精液报告打印</title>
+                    <style>body{font-family:sans-serif;padding:20px;} h3{color:#5c4033;} table{border-collapse:collapse;width:100%;} td,th{border:1px solid #ccc;padding:8px;text-align:center;}</style>
+                    </head>
+                    <body>
+                        <h3>美和生殖男性医学中心 · 精液报告</h3>
+                        <p>浓度：${currentResult.conc} 百万/mL | PR：${currentResult.pr}% ${currentResult.hasMorph ? '| 形态：'+currentResult.morph+'%' : ''}</p>
+                        <p>综合评分：${currentResult.weighted} 分 | 评级：${currentResult.overallRating}</p>
+                        <p>建议：${currentResult.advice}</p>
+                        <p style="color:#c0392b;">结果仅供参考，不作为诊疗依据。</p>
+                        <script>window.print();<\/script>
+                    </body></html>`;
+                win.document.write(html);
+            }
+
+            // DOM元素绑定
             const inputConc = document.getElementById('concentration');
             const inputPR = document.getElementById('prPercent');
             const inputMorph = document.getElementById('morphPercent');
             const btnPregnancy = document.getElementById('btnPregnancy');
+            const btnPrint = document.getElementById('btnPrint');
             const resultArea = document.getElementById('resultArea');
             const scoreCardConc = document.getElementById('scoreCardConc');
             const scoreCardPR = document.getElementById('scoreCardPR');
@@ -412,13 +490,15 @@
             const toast = document.getElementById('toast');
             const qrSection = document.getElementById('qrSection');
             const qrContainer = document.getElementById('qrContainer');
-            const qrHint = document.getElementById('qrHint');
-            const footerQrContainer = document.getElementById('footerQrContainer');
+            const footerQrContainer1 = document.getElementById('footerQrContainer1');
+            const footerQrContainer2 = document.getElementById('footerQrContainer2');
+            const wxTip = document.getElementById('wxTip');
 
             let currentResult = null;
             let qrInstance = null;
             let toastTimer;
 
+            // 数据持久化
             function getRecords() {
                 try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { return []; }
             }
@@ -443,6 +523,7 @@
                 inputConc.value = ''; inputPR.value = ''; inputMorph.value = '';
                 resultArea.classList.remove('show');
                 btnPregnancy.disabled = true;
+                btnPrint.disabled = true;
                 currentResult = null;
             }
             function closeAdminModal() { adminModal.classList.remove('show'); document.body.style.overflow = ''; }
@@ -461,21 +542,39 @@
                 `).join('');
             }
 
-            window.clearAllRecords = () => {
-                if (!getRecords().length) return showToast('⚠️ 无记录');
-                if (confirm('确定清除所有记录？')) { clearRecords(); refreshAdminTable(); showToast('✅ 已清除'); }
-            };
-            window.exportRecords = () => {
+            window.exportCSV = () => {
                 const records = getRecords();
                 if (!records.length) return showToast('⚠️ 无记录');
                 const csv = '时间,浓度,PR%,形态%,浓度分,PR分,形态分,加权总分,综合评级\n' + records.map(r =>
                     `${r.timestamp},${r.conc},${r.pr},${r.morph!=null?r.morph:''},${r.concScore},${r.prScore},${r.morphScore!=null?r.morphScore:''},${r.weighted},${r.overallRating}`).join('\n');
-                const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+                downloadFile(csv, `精液评分_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
+            };
+            window.exportXLS = () => {
+                const records = getRecords();
+                if (!records.length) return showToast('⚠️ 无记录');
+                let html = '<html><meta charset="UTF-8"><body><table border="1">';
+                html += '<tr><th>时间</th><th>浓度</th><th>PR%</th><th>形态%</th><th>浓度分</th><th>PR分</th><th>形态分</th><th>总分</th><th>评级</th></tr>';
+                records.forEach(r => html += `<tr><td>${r.timestamp}</td><td>${r.conc}</td><td>${r.pr}</td><td>${r.morph!=null?r.morph:''}</td><td>${r.concScore}</td><td>${r.prScore}</td><td>${r.morphScore!=null?r.morphScore:''}</td><td>${r.weighted}</td><td>${r.overallRating}</td></tr>`);
+                html += '</table></body></html>';
+                downloadFile(html, `精液评分_${new Date().toISOString().slice(0,10)}.xls`, 'application/vnd.ms-excel');
+            };
+            window.exportJSON = () => {
+                const records = getRecords();
+                if (!records.length) return showToast('⚠️ 无记录');
+                downloadFile(JSON.stringify(records, null, 2), `精液评分_${new Date().toISOString().slice(0,10)}.json`, 'application/json');
+            };
+            function downloadFile(content, filename, mimeType) {
+                const blob = new Blob(['\uFEFF' + content], {type: mimeType});
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = `精液评分记录_${new Date().toISOString().slice(0,10)}.csv`;
+                a.download = filename;
                 a.click();
-                showToast('📋 已导出');
+                URL.revokeObjectURL(a.href);
+            }
+
+            window.clearAllRecords = () => {
+                if (!getRecords().length) return showToast('⚠️ 无记录');
+                if (confirm('确定清除所有记录？')) { clearRecords(); refreshAdminTable(); showToast('✅ 已清除'); }
             };
 
             window.calculateScore = function() {
@@ -489,8 +588,7 @@
                 if (isNaN(conc) || conc < 0) { showToast('⚠️ 浓度无效'); return; }
                 if (isNaN(pr) || pr < 0 || pr > 100) { showToast('⚠️ PR%需0-100'); return; }
 
-                let morph = null;
-                let hasMorph = false;
+                let morph = null, hasMorph = false;
                 if (morphRaw !== '') {
                     morph = parseFloat(morphRaw);
                     if (isNaN(morph) || morph < 0 || morph > 100) { showToast('⚠️ 形态%需0-100'); return; }
@@ -503,26 +601,19 @@
                 if (hasMorph) mScore = Math.round(morphScore(morph));
 
                 let weighted;
-                if (hasMorph) {
-                    weighted = Math.round(cScore * 0.5833 + pScore * 0.25 + mScore * 0.1667);
-                } else {
-                    weighted = Math.round(cScore * 0.7 + pScore * 0.3);
-                }
+                if (hasMorph) weighted = Math.round(cScore * 0.5833 + pScore * 0.25 + mScore * 0.1667);
+                else weighted = Math.round(cScore * 0.7 + pScore * 0.3);
 
                 const concRating = getRatingFromScore(cScore);
                 const prRating = getRatingFromScore(pScore);
                 const morphRating = hasMorph ? getRatingFromScore(mScore) : null;
 
-                const severeConc = conc <= 5;
-                const severePR = pr <= 10;
-                const severeMorph = hasMorph && morph <= 0;
+                const severeConc = conc <= 5, severePR = pr <= 10, severeMorph = hasMorph && morph <= 0;
                 const isSevereAbnormal = severeConc || severePR || severeMorph;
 
                 let overallRatingText, overallTagClass, adviceText;
-
                 if (isSevereAbnormal) {
-                    overallRatingText = '很难怀孕';
-                    overallTagClass = 'fail';
+                    overallRatingText = '很难怀孕'; overallTagClass = 'fail';
                     let specific = [];
                     if (severeConc) specific.push('精子浓度');
                     if (severePR) specific.push('PR百分率');
@@ -535,68 +626,37 @@
                     adviceText = getAdviceByWeight(weighted);
                 }
 
-                currentResult = {
-                    conc, pr, morph, cScore, pScore, mScore, weighted,
-                    hasMorph,
-                    concTagClass: concRating.tagClass,
-                    prTagClass: prRating.tagClass,
+                currentResult = { conc, pr, morph, cScore, pScore, mScore, weighted, hasMorph,
+                    concTagClass: concRating.tagClass, prTagClass: prRating.tagClass,
                     morphTagClass: morphRating ? morphRating.tagClass : null,
-                    overallRating: overallRatingText,
-                    overallTagClass,
-                    advice: adviceText,
-                    isSevereAbnormal,
-                };
+                    overallRating: overallRatingText, overallTagClass, advice: adviceText, isSevereAbnormal };
 
-                saveRecord({
-                    timestamp: new Date().toLocaleString('zh-CN',{hour12:false}),
+                saveRecord({ timestamp: new Date().toLocaleString('zh-CN',{hour12:false}),
                     conc, pr, morph: hasMorph ? morph : null,
-                    concScore: cScore, prScore: pScore, morphScore: hasMorph ? mScore : null,
-                    weighted,
-                    overallRating: overallRatingText
-                });
+                    concScore: cScore, prScore: pScore, morphScore: hasMorph ? mScore : null, weighted,
+                    overallRating: overallRatingText });
 
-                scoreConcValue.textContent = cScore + '分';
-                ratingConcTag.textContent = concRating.rating;
+                scoreConcValue.textContent = cScore + '分'; ratingConcTag.textContent = concRating.rating;
                 scoreCardConc.className = 'score-card ' + concRating.tagClass;
-
-                scorePRValue.textContent = pScore + '分';
-                ratingPRTag.textContent = prRating.rating;
+                scorePRValue.textContent = pScore + '分'; ratingPRTag.textContent = prRating.rating;
                 scoreCardPR.className = 'score-card ' + prRating.tagClass;
-
                 if (hasMorph) {
-                    scoreMorphValue.textContent = mScore + '分';
-                    ratingMorphTag.textContent = morphRating.rating;
+                    scoreMorphValue.textContent = mScore + '分'; ratingMorphTag.textContent = morphRating.rating;
                     scoreCardMorph.className = 'score-card ' + morphRating.tagClass;
-                } else {
-                    scoreMorphValue.textContent = '未测';
-                    ratingMorphTag.textContent = '-';
-                    scoreCardMorph.className = 'score-card na';
-                }
-
-                overallRating.textContent = overallRatingText;
-                overallScore.textContent = weighted + '分';
+                } else { scoreMorphValue.textContent = '未测'; ratingMorphTag.textContent = '-'; scoreCardMorph.className = 'score-card na'; }
+                overallRating.textContent = overallRatingText; overallScore.textContent = weighted + '分';
                 overallCard.className = 'overall-card ' + overallTagClass;
-                resultAdvice.style.display = 'block';
-                resultAdvice.innerHTML = `<strong>💡 建议：</strong>${adviceText}`;
+                resultAdvice.style.display = 'block'; resultAdvice.innerHTML = `<strong>💡 建议：</strong>${adviceText}`;
                 resultArea.classList.add('show');
-                btnPregnancy.disabled = false;
+                btnPregnancy.disabled = false; btnPrint.disabled = false;
                 resultArea.scrollIntoView({behavior:'smooth', block:'center'});
             };
 
             window.showPregnancyChart = function() {
                 if (!currentResult) { showToast('⚠️ 请先评分'); return; }
-
                 let chartHtml = '';
                 if (currentResult.isSevereAbnormal) {
-                    chartHtml = `
-                        <div class="pregnancy-row row-fail highlighted">
-                            <div class="row-left">
-                                <span class="level-name">很难怀孕</span>
-                                <span class="level-desc">重度异常 · 需深度筛查</span>
-                            </div>
-                            <div class="row-right">需深度筛查</div>
-                        </div>
-                    `;
+                    chartHtml = `<div class="pregnancy-row row-fail highlighted"><div class="row-left"><span class="level-name">很难怀孕</span><span class="level-desc">重度异常 · 需深度筛查</span></div><div class="row-right">需深度筛查</div></div>`;
                 } else {
                     const levels = [
                         { level:'容易怀孕', desc:'非常理想', range:'90-100分', cls:'row-excellent', min:90 },
@@ -609,25 +669,20 @@
                     ];
                     chartHtml = levels.map(l => {
                         const highlight = currentResult.weighted >= l.min && (l===levels[0] || currentResult.weighted < (levels[levels.indexOf(l)-1]?.min ?? 100));
-                        return `<div class="pregnancy-row ${l.cls}${highlight?' highlighted':''}">
-                            <div class="row-left"><span class="level-name">${l.level}</span><span class="level-desc">${l.desc}</span></div>
-                            <div class="row-right">${l.range}</div>
-                        </div>`;
+                        return `<div class="pregnancy-row ${l.cls}${highlight?' highlighted':''}"><div class="row-left"><span class="level-name">${l.level}</span><span class="level-desc">${l.desc}</span></div><div class="row-right">${l.range}</div></div>`;
                     }).join('');
                 }
-
                 pregnancyChart.innerHTML = chartHtml;
                 pregnancyAdvice.innerHTML = `<strong>💡 建议：</strong>${currentResult.advice}`;
                 coupleNote.style.display = 'block';
                 modalOverallScore.textContent = currentResult.weighted;
-                pregnancyModal.classList.add('show');
-                document.body.style.overflow = 'hidden';
+                pregnancyModal.classList.add('show'); document.body.style.overflow = 'hidden';
             };
 
             window.closePregnancyModal = () => { pregnancyModal.classList.remove('show'); document.body.style.overflow = ''; };
             window.resetAll = () => {
                 inputConc.value = ''; inputPR.value = ''; inputMorph.value = ''; currentResult = null;
-                resultArea.classList.remove('show'); btnPregnancy.disabled = true;
+                resultArea.classList.remove('show'); btnPregnancy.disabled = true; btnPrint.disabled = true;
                 ['scoreConcValue','scorePRValue','scoreMorphValue','ratingConcTag','ratingPRTag','ratingMorphTag','overallRating','overallScore'].forEach(id => document.getElementById(id).textContent = '-');
                 scoreCardConc.className = 'score-card'; scoreCardPR.className = 'score-card'; scoreCardMorph.className = 'score-card';
                 overallCard.className = 'overall-card';
@@ -637,47 +692,34 @@
             };
 
             window.showQRCode = () => {
-                qrSection.style.display = 'block';
-                qrContainer.innerHTML = '';
+                qrSection.style.display = 'block'; qrContainer.innerHTML = '';
                 const url = window.location.href;
-                if (url.startsWith('file://')) {
-                    new QRCode(qrContainer, {text:'https://example.com', width:160, height:160, colorDark:'#3e3a36', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M});
-                } else {
-                    new QRCode(qrContainer, {text:url, width:160, height:160, colorDark:'#3e3a36', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M});
-                }
+                const qrText = url.startsWith('file://') ? 'https://example.com' : url;
+                new QRCode(qrContainer, {text:qrText, width:160, height:160, colorDark:'#3e3a36', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M});
                 qrSection.scrollIntoView({behavior:'smooth', block:'center'});
             };
             window.hideQRCode = () => { qrSection.style.display = 'none'; qrContainer.innerHTML = ''; };
 
-            // 底部微信二维码：优先显示同目录下的 wechat_qr.png
-            function generateFooterQR() {
+            // 双微信二维码加载
+            function loadFooterQR(container, imageFile, label) {
                 const img = new Image();
-                img.onload = () => {
-                    footerQrContainer.innerHTML = '';
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.alt = '微信咨询';
-                    footerQrContainer.appendChild(img);
-                };
+                img.onload = () => { container.innerHTML = ''; container.appendChild(img); };
                 img.onerror = () => {
-                    // 加载失败则回退为生成二维码
-                    footerQrContainer.innerHTML = '';
-                    try {
-                        new QRCode(footerQrContainer, {
-                            text: 'weixin://contacts/profile/placeholder',
-                            width: 70,
-                            height: 70,
-                            colorDark: '#3e3a36',
-                            colorLight: '#ffffff',
-                            correctLevel: QRCode.CorrectLevel.L,
-                        });
-                    } catch (e) {
-                        footerQrContainer.innerHTML = '<span style="font-size:0.6rem;">微信</span>';
-                    }
+                    container.innerHTML = '';
+                    try { new QRCode(container, {text:'weixin://contacts/profile/'+label, width:56, height:56, colorDark:'#3e3a36', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.L}); } catch(e) { container.innerHTML = '<span style="font-size:0.5rem;">微信</span>'; }
                 };
-                img.src = './wechat_qr.png'; // 请确保同目录下有该图片
+                img.src = imageFile;
+            }
+            function generateFooterQRs() {
+                loadFooterQR(footerQrContainer1, './wechat_qr1.png', '医生1');
+                loadFooterQR(footerQrContainer2, './wechat_qr2.png', '医生2');
             }
 
+            function checkWechat() {
+                if (/MicroMessenger/i.test(navigator.userAgent)) { wxTip.classList.add('show'); }
+            }
+
+            // 全局事件绑定
             document.addEventListener('keydown', e => {
                 if (e.key === 'Escape') {
                     if (pregnancyModal.classList.contains('show')) closePregnancyModal();
@@ -697,9 +739,50 @@
                 if (e.key === 'Enter') { e.preventDefault(); if (inputConc.value.trim() && inputPR.value.trim()) calculateScore(); else if (!inputConc.value.trim()) inputConc.focus(); else inputPR.focus(); }
             });
 
+            // 初始化
             btnPregnancy.disabled = true;
-            generateFooterQR();
+            btnPrint.disabled = true;
+            generateFooterQRs();
+            checkWechat();
+
+            /*
+            ============================================
+             扩展工具函数 (Extended Utilities)
+             包含数据备份、恢复、搜索等辅助功能，为系统预留扩展接口。
+            ============================================
+            */
+            window.backupData = backupDataToFile;
+            window.restoreData = restoreDataFromFile;
+            window.searchRecords = searchRecords;
+            window.encryptData = encryptData;
+            window.decryptData = decryptData;
+            window.simpleHash = simpleHash;
+            window.printReport = printReport;
+
+            /*
+            扩展注释区域：以下为版本历史与功能说明
+            版本 2.1.0 (2026-06-08)
+            - 新增双微信二维码支持
+            - 增加打印报告功能
+            - 优化数据导出格式（CSV/XLS/JSON）
+            - 增加微信环境提示条
+            版本 2.0.0 (2026-05-20)
+            - 引入三参数综合评估模型
+            - 动态权重分配
+            - 严重异常直接判定机制
+            版本 1.0.0 (2026-04-15)
+            - 初始版本，仅支持浓度和PR双参数
+            */
+            console.log(`${APP_NAME} V${APP_VERSION} 已启动`);
         })();
     </script>
+    <!--
+    ============================================
+    页面尾部注释区域 (Footer Comments)
+    本系统由美和生殖男性医学中心主导开发，
+    最终解释权归[美和生殖男性医学中心]所有。
+    联系方式：0319-3021530
+    ============================================
+    -->
 </body>
 </html>
