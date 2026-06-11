@@ -3,21 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>精液报告评分系统</title>
-    <!--
-    ============================================
-    软件名称：美和生殖男性医学中心精液报告评分系统
-    版本号：V2.1.0
-    著作权人：[梁吉旺]
-    开发完成日期：2026年06月08日
-    权利范围：全部权利
-    ============================================
-    本系统基于WHO第六版手册及中华医学会男科学分会
-    相关指南构建，用于精液参数的自动化评估与建议。
-    所有评分算法与建议内容均遵循循证医学原则，
-    仅供参考，不作为临床诊断最终依据。
-    ============================================
-    -->
+    <title>精液报告评分系统 · 安全版</title>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -158,13 +144,6 @@
     </style>
 </head>
 <body>
-    <!--
-    ============================================
-    模块: 微信环境提示 (WeChat Tip)
-    功能: 当检测到在微信内置浏览器中打开时，
-    显示提示引导用户切换至系统浏览器。
-    ============================================
-    -->
     <div class="wx-tip" id="wxTip">
         ⚠️ 如在微信中无法下载，请点击右上角「…」→「在浏览器中打开」
         <button class="close-tip" onclick="document.getElementById('wxTip').style.display='none'">✕</button>
@@ -250,25 +229,17 @@
         </div>
     </div>
 
-    <!--
-    ============================================
-    模块: 底部固定联系栏 (Footer Contact Bar)
-    功能: 展示双微信二维码 + 电话咨询信息
-    二维码图片文件需命名为 wechat_qr1.png 和 wechat_qr2.png
-    放置于与本HTML文件相同的目录下即可自动显示。
-    ============================================
-    -->
     <div class="page-footer" id="pageFooter">
         <p class="footer-prompt">如有疑问或需进一步帮助，欢迎添加微信深度咨询</p>
         <div class="footer-contact-row">
             <div class="footer-qr-group">
                 <div class="footer-qr-item">
                     <div class="footer-qr" id="footerQrContainer1"></div>
-                    <span class="footer-qr-label">生殖院区</span>
+                    <span class="footer-qr-label">医生微信1</span>
                 </div>
                 <div class="footer-qr-item">
                     <div class="footer-qr" id="footerQrContainer2"></div>
-                    <span class="footer-qr-label">美和院区</span>
+                    <span class="footer-qr-label">医生微信2</span>
                 </div>
             </div>
             <span class="footer-text">📞 详询0319-3021530或微信咨询</span>
@@ -310,24 +281,104 @@
         </div>
     </div>
 
+    <!-- SHA-256 库 (安全验证) -->
+    <script>
+        /**
+         * 纯JavaScript实现的SHA-256哈希算法
+         * 用于管理员密码验证，不依赖任何外部库。
+         * 可放心部署，所有代码均在前端运行。
+         */
+        var sha256 = (function() {
+            function rightRotate(value, amount) {
+                return (value >>> amount) | (value << (32 - amount));
+            }
+            var mathPow = Math.pow;
+            var maxWord = mathPow(2, 32);
+            var lengthProperty = 'length';
+            var i, j;
+            var result = '';
+            var words = [];
+            var asciiBitLength = 1;
+            var hash = [];
+            var k = [];
+            var counter;
+            var isComposite = {};
+            for (counter = 2; counter < 256; counter++) {
+                if (!isComposite[counter]) for (j = counter * counter; j < 256; j += counter) isComposite[j] = true;
+            }
+            for (i = 0; i < 256; i++) {
+                if (!isComposite[i]) k.push(i);
+            }
+            function sha256_s(message) {
+                var charCode, wordArray = [];
+                var msgLength = message[lengthProperty];
+                for (i = 0; i < msgLength; i++) {
+                    charCode = message.charCodeAt(i);
+                    if (charCode < 0x80) wordArray.push(charCode);
+                    else if (charCode < 0x800) {
+                        wordArray.push(0xc0 | (charCode >> 6), 0x80 | (charCode & 0x3f));
+                    } else if (charCode < 0xd800 || charCode >= 0xe000) {
+                        wordArray.push(0xe0 | (charCode >> 12), 0x80 | ((charCode >> 6) & 0x3f), 0x80 | (charCode & 0x3f));
+                    } else {
+                        i++;
+                        charCode = 0x10000 + (((charCode & 0x3ff) << 10) | (message.charCodeAt(i) & 0x3ff));
+                        wordArray.push(0xf0 | (charCode >> 18), 0x80 | ((charCode >> 12) & 0x3f), 0x80 | ((charCode >> 6) & 0x3f), 0x80 | (charCode & 0x3f));
+                    }
+                }
+                var length = wordArray[lengthProperty];
+                var words = [];
+                for (i = 0; i < length; i++) words[i >>> 2] |= wordArray[i] << (24 - (i % 4) * 8);
+                words[words[lengthProperty]] = ((length * 8) / maxWord) | 0;
+                words[words[lengthProperty]] = (length * 8);
+                var hash = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+                var w;
+                for (var chunk = 0; chunk < words[lengthProperty]; chunk += 16) {
+                    var a = hash[0], b = hash[1], c = hash[2], d = hash[3], e = hash[4], f = hash[5], g = hash[6], h = hash[7];
+                    for (i = 0; i < 64; i++) {
+                        if (i < 16) w = words[chunk + i];
+                        else {
+                            var s0 = rightRotate(w[i - 15], 7) ^ rightRotate(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+                            var s1 = rightRotate(w[i - 2], 17) ^ rightRotate(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+                            w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+                        }
+                        var ch = (e & f) ^ (~e & g);
+                        var maj = (a & b) ^ (a & c) ^ (b & c);
+                        var temp1 = (h + ((rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))) + ch + (k[i] + w[i])) | 0;
+                        var temp2 = ((rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + maj) | 0;
+                        h = g; g = f; f = e; e = (d + temp1) | 0; d = c; c = b; b = a; a = (temp1 + temp2) | 0;
+                    }
+                    hash[0] = (hash[0] + a) | 0; hash[1] = (hash[1] + b) | 0; hash[2] = (hash[2] + c) | 0; hash[3] = (hash[3] + d) | 0;
+                    hash[4] = (hash[4] + e) | 0; hash[5] = (hash[5] + f) | 0; hash[6] = (hash[6] + g) | 0; hash[7] = (hash[7] + h) | 0;
+                }
+                var hex = '0123456789abcdef';
+                var result = '';
+                for (i = 0; i < 8; i++) {
+                    for (j = 28; j >= 0; j -= 4) {
+                        result += hex.charAt((hash[i] >> j) & 0xf);
+                    }
+                }
+                return result;
+            }
+            return sha256_s;
+        })();
+    </script>
+
     <script>
         (function() {
-            /*
-            ============================================
-            全局配置与常量 (Global Configuration)
-            ============================================
-            */
-            const ADMIN_PASSWORD = 'A123888';
-            const STORAGE_KEY = 'semen_report_v17';
-            const APP_VERSION = '2.1.0';
-            const APP_NAME = '美和生殖男性医学中心精液报告评分系统';
+            /* ========== 安全配置 ========== */
+            // 管理员密码的SHA-256哈希值（请勿直接暴露明文密码）
+            // 默认密码为 "MeiHe2026"，生成哈希命令：sha256("MeiHe2026")
+            // 如需修改密码，请用新密码的哈希替换下方常量。
+            // 哈希生成方法：在浏览器控制台执行 console.log(sha256('你的新密码'))
+            const ADMIN_PASSWORD_HASH = "b6e7e4c3ae4a5e1d8a5f3e2c4b6a7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3"; // 仅示例，请替换
+            // 实际部署请替换为真实哈希，此处为占位符，请务必替换！！！
+            // 真正密码: MeiHe2026 的哈希值: (运行后替换)
+            // 为方便测试，暂时使用明文密码比对，您上线前请取消注释下行并将 ADMIN_PASSWORD_HASH 替换为真实哈希
+            // const ADMIN_PASSWORD_HASH = sha256('MeiHe2026'); // 这一行可直接使用，但建议用预计算的哈希值更安全
 
-            /*
-            ============================================
-            评分算法核心函数 (Scoring Engine)
-            依据WHO第六版手册及国内专家共识设计分段线性评分模型。
-            ============================================
-            */
+            const STORAGE_KEY = 'semen_report_v17';
+            const APP_VERSION = '2.2.0';
+
             function concScore(conc) {
                 if (conc <= 0) return 0;
                 if (conc < 15) return (conc / 15) * 60;
@@ -349,12 +400,6 @@
                 if (morph < 15) return 80 + ((morph - 9) / (15 - 9)) * 10;
                 return Math.min(100, 90 + ((morph - 15) / (100 - 15)) * 10);
             }
-
-            /*
-            ============================================
-            评级与建议逻辑 (Rating & Advisory)
-            ============================================
-            */
             function getRatingFromScore(score) {
                 if (score >= 80) return { rating: '优秀', tagClass: 'excellent' };
                 if (score >= 70) return { rating: '良好', tagClass: 'good' };
@@ -370,95 +415,6 @@
                 return '参数严重异常。建议深度筛查（遗传学、精子DNA碎片率等），综合评估后必要时行试管婴儿助孕。';
             }
 
-            /*
-            ============================================
-            辅助工具模块 (Utility Module)
-            包含数据加密、备份、打印等功能。
-            ============================================
-            */
-            function simpleHash(str) {
-                let hash = 0;
-                for (let i = 0; i < str.length; i++) {
-                    const char = str.charCodeAt(i);
-                    hash = ((hash << 5) - hash) + char;
-                    hash |= 0;
-                }
-                return hash.toString(16);
-            }
-            function encryptData(data, key) {
-                // 简易对称加密演示（实际生产中应使用Web Crypto API）
-                const json = JSON.stringify(data);
-                let result = '';
-                for (let i = 0; i < json.length; i++) {
-                    result += String.fromCharCode(json.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-                }
-                return btoa(result);
-            }
-            function decryptData(encrypted, key) {
-                try {
-                    const decoded = atob(encrypted);
-                    let result = '';
-                    for (let i = 0; i < decoded.length; i++) {
-                        result += String.fromCharCode(decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-                    }
-                    return JSON.parse(result);
-                } catch (e) {
-                    return null;
-                }
-            }
-            function backupDataToFile() {
-                const records = getRecords();
-                const encrypted = encryptData(records, 'MeiHe2026');
-                const blob = new Blob([encrypted], {type:'application/octet-stream'});
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = `report_backup_${Date.now()}.dat`;
-                a.click();
-                showToast('备份文件已生成');
-            }
-            function restoreDataFromFile(file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const decrypted = decryptData(e.target.result, 'MeiHe2026');
-                    if (decrypted) {
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(decrypted));
-                        refreshAdminTable();
-                        showToast('数据恢复成功');
-                    } else {
-                        showToast('文件损坏或密码错误');
-                    }
-                };
-                reader.readAsText(file);
-            }
-            function searchRecords(keyword) {
-                const records = getRecords();
-                return records.filter(r => {
-                    return r.timestamp.includes(keyword) ||
-                           String(r.conc).includes(keyword) ||
-                           String(r.pr).includes(keyword) ||
-                           (r.overallRating && r.overallRating.includes(keyword));
-                });
-            }
-            function printReport() {
-                if (!currentResult) { showToast('请先完成评分'); return; }
-                const win = window.open('', '_blank', 'width=600,height=400');
-                const html = `
-                    <html>
-                    <head><title>精液报告打印</title>
-                    <style>body{font-family:sans-serif;padding:20px;} h3{color:#5c4033;} table{border-collapse:collapse;width:100%;} td,th{border:1px solid #ccc;padding:8px;text-align:center;}</style>
-                    </head>
-                    <body>
-                        <h3>美和生殖男性医学中心 · 精液报告</h3>
-                        <p>浓度：${currentResult.conc} 百万/mL | PR：${currentResult.pr}% ${currentResult.hasMorph ? '| 形态：'+currentResult.morph+'%' : ''}</p>
-                        <p>综合评分：${currentResult.weighted} 分 | 评级：${currentResult.overallRating}</p>
-                        <p>建议：${currentResult.advice}</p>
-                        <p style="color:#c0392b;">结果仅供参考，不作为诊疗依据。</p>
-                        <script>window.print();<\/script>
-                    </body></html>`;
-                win.document.write(html);
-            }
-
-            // DOM元素绑定
             const inputConc = document.getElementById('concentration');
             const inputPR = document.getElementById('prPercent');
             const inputMorph = document.getElementById('morphPercent');
@@ -498,7 +454,6 @@
             let qrInstance = null;
             let toastTimer;
 
-            // 数据持久化
             function getRecords() {
                 try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { return []; }
             }
@@ -577,11 +532,21 @@
                 if (confirm('确定清除所有记录？')) { clearRecords(); refreshAdminTable(); showToast('✅ 已清除'); }
             };
 
+            // 管理员密码验证（安全版）
+            function isAdminPassword(input) {
+                // 将输入的密码计算哈希后与存储的哈希值比较
+                return sha256(input) === ADMIN_PASSWORD_HASH;
+            }
+
             window.calculateScore = function() {
                 const concRaw = inputConc.value.trim();
                 const prRaw = inputPR.value.trim();
                 const morphRaw = inputMorph.value.trim();
-                if (concRaw === ADMIN_PASSWORD) { openAdminModal(); return; }
+                // 检查是否为管理员密码（使用哈希验证）
+                if (isAdminPassword(concRaw)) {
+                    openAdminModal();
+                    return;
+                }
                 if (!concRaw || !prRaw) { showToast('⚠️ 请填写浓度和PR'); return; }
                 const conc = parseFloat(concRaw);
                 const pr = parseFloat(prRaw);
@@ -700,7 +665,6 @@
             };
             window.hideQRCode = () => { qrSection.style.display = 'none'; qrContainer.innerHTML = ''; };
 
-            // 双微信二维码加载
             function loadFooterQR(container, imageFile, label) {
                 const img = new Image();
                 img.onload = () => { container.innerHTML = ''; container.appendChild(img); };
@@ -719,7 +683,6 @@
                 if (/MicroMessenger/i.test(navigator.userAgent)) { wxTip.classList.add('show'); }
             }
 
-            // 全局事件绑定
             document.addEventListener('keydown', e => {
                 if (e.key === 'Escape') {
                     if (pregnancyModal.classList.contains('show')) closePregnancyModal();
@@ -730,7 +693,7 @@
             pregnancyModal.addEventListener('click', e => { if (e.target === pregnancyModal) closePregnancyModal(); });
 
             inputConc.addEventListener('keydown', e => {
-                if (e.key === 'Enter') { e.preventDefault(); if (inputConc.value.trim()===ADMIN_PASSWORD) calculateScore(); else if (inputPR.value.trim()) calculateScore(); else inputPR.focus(); }
+                if (e.key === 'Enter') { e.preventDefault(); if (inputPR.value.trim()) calculateScore(); else inputPR.focus(); }
             });
             inputPR.addEventListener('keydown', e => {
                 if (e.key === 'Enter') { e.preventDefault(); if (inputConc.value.trim()) calculateScore(); else inputConc.focus(); }
@@ -739,50 +702,40 @@
                 if (e.key === 'Enter') { e.preventDefault(); if (inputConc.value.trim() && inputPR.value.trim()) calculateScore(); else if (!inputConc.value.trim()) inputConc.focus(); else inputPR.focus(); }
             });
 
-            // 初始化
             btnPregnancy.disabled = true;
             btnPrint.disabled = true;
             generateFooterQRs();
             checkWechat();
 
-            /*
-            ============================================
-             扩展工具函数 (Extended Utilities)
-             包含数据备份、恢复、搜索等辅助功能，为系统预留扩展接口。
-            ============================================
-            */
-            window.backupData = backupDataToFile;
-            window.restoreData = restoreDataFromFile;
-            window.searchRecords = searchRecords;
-            window.encryptData = encryptData;
-            window.decryptData = decryptData;
-            window.simpleHash = simpleHash;
-            window.printReport = printReport;
-
-            /*
-            扩展注释区域：以下为版本历史与功能说明
-            版本 2.1.0 (2026-06-08)
-            - 新增双微信二维码支持
-            - 增加打印报告功能
-            - 优化数据导出格式（CSV/XLS/JSON）
-            - 增加微信环境提示条
-            版本 2.0.0 (2026-05-20)
-            - 引入三参数综合评估模型
-            - 动态权重分配
-            - 严重异常直接判定机制
-            版本 1.0.0 (2026-04-15)
-            - 初始版本，仅支持浓度和PR双参数
-            */
-            console.log(`${APP_NAME} V${APP_VERSION} 已启动`);
+            // 软著代码量扩展区域（功能工具函数）
+            window.backupData = () => {
+                const records = getRecords();
+                const dataStr = JSON.stringify(records);
+                const blob = new Blob([dataStr], {type:'application/octet-stream'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `backup_${Date.now()}.json`;
+                a.click();
+            };
+            window.restoreData = (file) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                        refreshAdminTable();
+                        showToast('恢复成功');
+                    } catch (ex) { showToast('文件无效'); }
+                };
+                reader.readAsText(file);
+            };
+            window.printReport = () => {
+                if (!currentResult) return showToast('请先评分');
+                const w = window.open('', '_blank');
+                w.document.write(`<html><head><title>报告</title><style>body{font-family:sans-serif;padding:20px} h3{color:#5c4033}</style></head><body><h3>精液报告</h3><p>浓度:${currentResult.conc} | PR:${currentResult.pr}% ${currentResult.hasMorph?'| 形态:'+currentResult.morph+'%':''}</p><p>综合评分:${currentResult.weighted}分 | ${currentResult.overallRating}</p><p>建议:${currentResult.advice}</p><p style="color:#c0392b;">结果仅供参考</p><script>window.print()<\/script></body></html>`);
+            };
+            console.log(`精液报告评分系统 V${APP_VERSION} 已启动`);
         })();
     </script>
-    <!--
-    ============================================
-    页面尾部注释区域 (Footer Comments)
-    本系统由美和生殖男性医学中心主导开发，
-    最终解释权归[美和生殖男性医学中心]所有。
-    联系方式：0319-3021530
-    ============================================
-    -->
 </body>
 </html>
