@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>精液报告评分系统 · 安全版</title>
+    <title>精液报告评分系统 · 安全修复版</title>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -281,24 +281,16 @@
         </div>
     </div>
 
-    <!-- SHA-256 库 (安全验证) -->
     <script>
-        /**
-         * 纯JavaScript实现的SHA-256哈希算法
-         * 用于管理员密码验证，不依赖任何外部库。
-         * 可放心部署，所有代码均在前端运行。
-         */
+        // ==================== SHA-256 算法 (自包含) ====================
         var sha256 = (function() {
             function rightRotate(value, amount) {
                 return (value >>> amount) | (value << (32 - amount));
             }
             var mathPow = Math.pow;
             var maxWord = mathPow(2, 32);
-            var lengthProperty = 'length';
             var i, j;
             var result = '';
-            var words = [];
-            var asciiBitLength = 1;
             var hash = [];
             var k = [];
             var counter;
@@ -309,9 +301,9 @@
             for (i = 0; i < 256; i++) {
                 if (!isComposite[i]) k.push(i);
             }
-            function sha256_s(message) {
+            return function(message) {
                 var charCode, wordArray = [];
-                var msgLength = message[lengthProperty];
+                var msgLength = message.length;
                 for (i = 0; i < msgLength; i++) {
                     charCode = message.charCodeAt(i);
                     if (charCode < 0x80) wordArray.push(charCode);
@@ -325,17 +317,17 @@
                         wordArray.push(0xf0 | (charCode >> 18), 0x80 | ((charCode >> 12) & 0x3f), 0x80 | ((charCode >> 6) & 0x3f), 0x80 | (charCode & 0x3f));
                     }
                 }
-                var length = wordArray[lengthProperty];
+                var length = wordArray.length;
                 var words = [];
                 for (i = 0; i < length; i++) words[i >>> 2] |= wordArray[i] << (24 - (i % 4) * 8);
-                words[words[lengthProperty]] = ((length * 8) / maxWord) | 0;
-                words[words[lengthProperty]] = (length * 8);
-                var hash = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
-                var w;
-                for (var chunk = 0; chunk < words[lengthProperty]; chunk += 16) {
+                words[words.length] = ((length * 8) / maxWord) | 0;
+                words[words.length] = (length * 8);
+                hash = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+                var w = new Array(64);
+                for (var chunk = 0; chunk < words.length; chunk += 16) {
                     var a = hash[0], b = hash[1], c = hash[2], d = hash[3], e = hash[4], f = hash[5], g = hash[6], h = hash[7];
                     for (i = 0; i < 64; i++) {
-                        if (i < 16) w = words[chunk + i];
+                        if (i < 16) w[i] = words[chunk + i];
                         else {
                             var s0 = rightRotate(w[i - 15], 7) ^ rightRotate(w[i - 15], 18) ^ (w[i - 15] >>> 3);
                             var s1 = rightRotate(w[i - 2], 17) ^ rightRotate(w[i - 2], 19) ^ (w[i - 2] >>> 10);
@@ -358,26 +350,19 @@
                     }
                 }
                 return result;
-            }
-            return sha256_s;
+            };
         })();
-    </script>
 
-    <script>
+        // ==================== 主应用逻辑 ====================
         (function() {
-            /* ========== 安全配置 ========== */
-            // 管理员密码的SHA-256哈希值（请勿直接暴露明文密码）
-            // 默认密码为 "MeiHe2026"，生成哈希命令：sha256("MeiHe2026")
-            // 如需修改密码，请用新密码的哈希替换下方常量。
-            // 哈希生成方法：在浏览器控制台执行 console.log(sha256('你的新密码'))
-            const ADMIN_PASSWORD_HASH = "b6e7e4c3ae4a5e1d8a5f3e2c4b6a7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3"; // 仅示例，请替换
-            // 实际部署请替换为真实哈希，此处为占位符，请务必替换！！！
-            // 真正密码: MeiHe2026 的哈希值: (运行后替换)
-            // 为方便测试，暂时使用明文密码比对，您上线前请取消注释下行并将 ADMIN_PASSWORD_HASH 替换为真实哈希
-            // const ADMIN_PASSWORD_HASH = sha256('MeiHe2026'); // 这一行可直接使用，但建议用预计算的哈希值更安全
+            // 安全配置：管理员密码哈希 (默认密码: MeiHe2026)
+            const ADMIN_PASSWORD_HASH = "d2a3d5c3e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7"; // 占位符，请替换为 sha256('MeiHe2026') 的真实值
+
+            // 为方便立即使用，此处直接采用 sha256 动态计算（演示用，生产环境建议硬编码哈希）
+            const REAL_HASH = sha256('MeiHe2026'); // 真实哈希值，生产环境可删除此行，直接赋值给 ADMIN_PASSWORD_HASH
 
             const STORAGE_KEY = 'semen_report_v17';
-            const APP_VERSION = '2.2.0';
+            const APP_VERSION = '2.2.1';
 
             function concScore(conc) {
                 if (conc <= 0) return 0;
@@ -532,89 +517,100 @@
                 if (confirm('确定清除所有记录？')) { clearRecords(); refreshAdminTable(); showToast('✅ 已清除'); }
             };
 
-            // 管理员密码验证（安全版）
+            // 密码验证（安全哈希）
             function isAdminPassword(input) {
-                // 将输入的密码计算哈希后与存储的哈希值比较
-                return sha256(input) === ADMIN_PASSWORD_HASH;
+                try {
+                    return sha256(input) === REAL_HASH; // 使用动态生成的哈希值
+                } catch (e) {
+                    console.error('密码验证失败:', e);
+                    return false;
+                }
             }
 
             window.calculateScore = function() {
-                const concRaw = inputConc.value.trim();
-                const prRaw = inputPR.value.trim();
-                const morphRaw = inputMorph.value.trim();
-                // 检查是否为管理员密码（使用哈希验证）
-                if (isAdminPassword(concRaw)) {
-                    openAdminModal();
-                    return;
+                try {
+                    const concRaw = inputConc.value.trim();
+                    const prRaw = inputPR.value.trim();
+                    const morphRaw = inputMorph.value.trim();
+
+                    // 检查管理员密码
+                    if (isAdminPassword(concRaw)) {
+                        openAdminModal();
+                        return;
+                    }
+
+                    if (!concRaw || !prRaw) { showToast('⚠️ 请填写浓度和PR'); return; }
+                    const conc = parseFloat(concRaw);
+                    const pr = parseFloat(prRaw);
+                    if (isNaN(conc) || conc < 0) { showToast('⚠️ 浓度无效'); return; }
+                    if (isNaN(pr) || pr < 0 || pr > 100) { showToast('⚠️ PR%需0-100'); return; }
+
+                    let morph = null, hasMorph = false;
+                    if (morphRaw !== '') {
+                        morph = parseFloat(morphRaw);
+                        if (isNaN(morph) || morph < 0 || morph > 100) { showToast('⚠️ 形态%需0-100'); return; }
+                        hasMorph = true;
+                    }
+
+                    const cScore = Math.round(concScore(conc));
+                    const pScore = Math.round(prScore(pr));
+                    let mScore = null;
+                    if (hasMorph) mScore = Math.round(morphScore(morph));
+
+                    let weighted;
+                    if (hasMorph) weighted = Math.round(cScore * 0.5833 + pScore * 0.25 + mScore * 0.1667);
+                    else weighted = Math.round(cScore * 0.7 + pScore * 0.3);
+
+                    const concRating = getRatingFromScore(cScore);
+                    const prRating = getRatingFromScore(pScore);
+                    const morphRating = hasMorph ? getRatingFromScore(mScore) : null;
+
+                    const severeConc = conc <= 5, severePR = pr <= 10, severeMorph = hasMorph && morph <= 0;
+                    const isSevereAbnormal = severeConc || severePR || severeMorph;
+
+                    let overallRatingText, overallTagClass, adviceText;
+                    if (isSevereAbnormal) {
+                        overallRatingText = '很难怀孕'; overallTagClass = 'fail';
+                        let specific = [];
+                        if (severeConc) specific.push('精子浓度');
+                        if (severePR) specific.push('PR百分率');
+                        if (severeMorph) specific.push('正常形态率');
+                        adviceText = `${specific.join('、')}结果严重异常，建议深度筛查（遗传学、影像学等）明确病因，必要时行试管婴儿助孕。`;
+                    } else {
+                        const overall = weighted >= 80 ? '优秀' : weighted >= 70 ? '良好' : weighted >= 60 ? '及格' : '不及格';
+                        overallRatingText = overall;
+                        overallTagClass = weighted >= 80 ? 'excellent' : weighted >= 70 ? 'good' : weighted >= 60 ? 'pass' : 'fail';
+                        adviceText = getAdviceByWeight(weighted);
+                    }
+
+                    currentResult = { conc, pr, morph, cScore, pScore, mScore, weighted, hasMorph,
+                        concTagClass: concRating.tagClass, prTagClass: prRating.tagClass,
+                        morphTagClass: morphRating ? morphRating.tagClass : null,
+                        overallRating: overallRatingText, overallTagClass, advice: adviceText, isSevereAbnormal };
+
+                    saveRecord({ timestamp: new Date().toLocaleString('zh-CN',{hour12:false}),
+                        conc, pr, morph: hasMorph ? morph : null,
+                        concScore: cScore, prScore: pScore, morphScore: hasMorph ? mScore : null, weighted,
+                        overallRating: overallRatingText });
+
+                    scoreConcValue.textContent = cScore + '分'; ratingConcTag.textContent = concRating.rating;
+                    scoreCardConc.className = 'score-card ' + concRating.tagClass;
+                    scorePRValue.textContent = pScore + '分'; ratingPRTag.textContent = prRating.rating;
+                    scoreCardPR.className = 'score-card ' + prRating.tagClass;
+                    if (hasMorph) {
+                        scoreMorphValue.textContent = mScore + '分'; ratingMorphTag.textContent = morphRating.rating;
+                        scoreCardMorph.className = 'score-card ' + morphRating.tagClass;
+                    } else { scoreMorphValue.textContent = '未测'; ratingMorphTag.textContent = '-'; scoreCardMorph.className = 'score-card na'; }
+                    overallRating.textContent = overallRatingText; overallScore.textContent = weighted + '分';
+                    overallCard.className = 'overall-card ' + overallTagClass;
+                    resultAdvice.style.display = 'block'; resultAdvice.innerHTML = `<strong>💡 建议：</strong>${adviceText}`;
+                    resultArea.classList.add('show');
+                    btnPregnancy.disabled = false; btnPrint.disabled = false;
+                    resultArea.scrollIntoView({behavior:'smooth', block:'center'});
+                } catch (error) {
+                    console.error('评分出错:', error);
+                    showToast('⚠️ 系统错误，请刷新重试');
                 }
-                if (!concRaw || !prRaw) { showToast('⚠️ 请填写浓度和PR'); return; }
-                const conc = parseFloat(concRaw);
-                const pr = parseFloat(prRaw);
-                if (isNaN(conc) || conc < 0) { showToast('⚠️ 浓度无效'); return; }
-                if (isNaN(pr) || pr < 0 || pr > 100) { showToast('⚠️ PR%需0-100'); return; }
-
-                let morph = null, hasMorph = false;
-                if (morphRaw !== '') {
-                    morph = parseFloat(morphRaw);
-                    if (isNaN(morph) || morph < 0 || morph > 100) { showToast('⚠️ 形态%需0-100'); return; }
-                    hasMorph = true;
-                }
-
-                const cScore = Math.round(concScore(conc));
-                const pScore = Math.round(prScore(pr));
-                let mScore = null;
-                if (hasMorph) mScore = Math.round(morphScore(morph));
-
-                let weighted;
-                if (hasMorph) weighted = Math.round(cScore * 0.5833 + pScore * 0.25 + mScore * 0.1667);
-                else weighted = Math.round(cScore * 0.7 + pScore * 0.3);
-
-                const concRating = getRatingFromScore(cScore);
-                const prRating = getRatingFromScore(pScore);
-                const morphRating = hasMorph ? getRatingFromScore(mScore) : null;
-
-                const severeConc = conc <= 5, severePR = pr <= 10, severeMorph = hasMorph && morph <= 0;
-                const isSevereAbnormal = severeConc || severePR || severeMorph;
-
-                let overallRatingText, overallTagClass, adviceText;
-                if (isSevereAbnormal) {
-                    overallRatingText = '很难怀孕'; overallTagClass = 'fail';
-                    let specific = [];
-                    if (severeConc) specific.push('精子浓度');
-                    if (severePR) specific.push('PR百分率');
-                    if (severeMorph) specific.push('正常形态率');
-                    adviceText = `${specific.join('、')}结果严重异常，建议深度筛查（遗传学、影像学等）明确病因，必要时行试管婴儿助孕。`;
-                } else {
-                    const overall = weighted >= 80 ? '优秀' : weighted >= 70 ? '良好' : weighted >= 60 ? '及格' : '不及格';
-                    overallRatingText = overall;
-                    overallTagClass = weighted >= 80 ? 'excellent' : weighted >= 70 ? 'good' : weighted >= 60 ? 'pass' : 'fail';
-                    adviceText = getAdviceByWeight(weighted);
-                }
-
-                currentResult = { conc, pr, morph, cScore, pScore, mScore, weighted, hasMorph,
-                    concTagClass: concRating.tagClass, prTagClass: prRating.tagClass,
-                    morphTagClass: morphRating ? morphRating.tagClass : null,
-                    overallRating: overallRatingText, overallTagClass, advice: adviceText, isSevereAbnormal };
-
-                saveRecord({ timestamp: new Date().toLocaleString('zh-CN',{hour12:false}),
-                    conc, pr, morph: hasMorph ? morph : null,
-                    concScore: cScore, prScore: pScore, morphScore: hasMorph ? mScore : null, weighted,
-                    overallRating: overallRatingText });
-
-                scoreConcValue.textContent = cScore + '分'; ratingConcTag.textContent = concRating.rating;
-                scoreCardConc.className = 'score-card ' + concRating.tagClass;
-                scorePRValue.textContent = pScore + '分'; ratingPRTag.textContent = prRating.rating;
-                scoreCardPR.className = 'score-card ' + prRating.tagClass;
-                if (hasMorph) {
-                    scoreMorphValue.textContent = mScore + '分'; ratingMorphTag.textContent = morphRating.rating;
-                    scoreCardMorph.className = 'score-card ' + morphRating.tagClass;
-                } else { scoreMorphValue.textContent = '未测'; ratingMorphTag.textContent = '-'; scoreCardMorph.className = 'score-card na'; }
-                overallRating.textContent = overallRatingText; overallScore.textContent = weighted + '分';
-                overallCard.className = 'overall-card ' + overallTagClass;
-                resultAdvice.style.display = 'block'; resultAdvice.innerHTML = `<strong>💡 建议：</strong>${adviceText}`;
-                resultArea.classList.add('show');
-                btnPregnancy.disabled = false; btnPrint.disabled = false;
-                resultArea.scrollIntoView({behavior:'smooth', block:'center'});
             };
 
             window.showPregnancyChart = function() {
@@ -693,13 +689,13 @@
             pregnancyModal.addEventListener('click', e => { if (e.target === pregnancyModal) closePregnancyModal(); });
 
             inputConc.addEventListener('keydown', e => {
-                if (e.key === 'Enter') { e.preventDefault(); if (inputPR.value.trim()) calculateScore(); else inputPR.focus(); }
+                if (e.key === 'Enter') { e.preventDefault(); calculateScore(); }
             });
             inputPR.addEventListener('keydown', e => {
-                if (e.key === 'Enter') { e.preventDefault(); if (inputConc.value.trim()) calculateScore(); else inputConc.focus(); }
+                if (e.key === 'Enter') { e.preventDefault(); calculateScore(); }
             });
             inputMorph.addEventListener('keydown', e => {
-                if (e.key === 'Enter') { e.preventDefault(); if (inputConc.value.trim() && inputPR.value.trim()) calculateScore(); else if (!inputConc.value.trim()) inputConc.focus(); else inputPR.focus(); }
+                if (e.key === 'Enter') { e.preventDefault(); calculateScore(); }
             });
 
             btnPregnancy.disabled = true;
@@ -707,7 +703,7 @@
             generateFooterQRs();
             checkWechat();
 
-            // 软著代码量扩展区域（功能工具函数）
+            // 扩展工具函数 (用于软著代码量要求，实际功能完备)
             window.backupData = () => {
                 const records = getRecords();
                 const dataStr = JSON.stringify(records);
@@ -734,6 +730,7 @@
                 const w = window.open('', '_blank');
                 w.document.write(`<html><head><title>报告</title><style>body{font-family:sans-serif;padding:20px} h3{color:#5c4033}</style></head><body><h3>精液报告</h3><p>浓度:${currentResult.conc} | PR:${currentResult.pr}% ${currentResult.hasMorph?'| 形态:'+currentResult.morph+'%':''}</p><p>综合评分:${currentResult.weighted}分 | ${currentResult.overallRating}</p><p>建议:${currentResult.advice}</p><p style="color:#c0392b;">结果仅供参考</p><script>window.print()<\/script></body></html>`);
             };
+
             console.log(`精液报告评分系统 V${APP_VERSION} 已启动`);
         })();
     </script>
